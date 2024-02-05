@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.3/html2pdf.bundle.js"></script>
+    <script src="html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+            integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
+</head>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f7fc;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+        flex-direction: column;
+    }
+
+    form {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+        overflow: visible;
+    }
+
+    h1 {
+        color: #3498db;
+        font-size: 24px;
+        margin-bottom: 20px;
+        overflow: visible;
+    }
+
+    label {
+        display: block;
+        font-family: cursive;
+        margin-top: 15px;
+        color: #000000;
+        font-size: 25px;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 10px;
+        margin-top: 8px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    button {
+        background-color: #3498db;
+        font-family: cursive;
+        color: #fff;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        margin-top: 10px;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #217dbb;
+    }
+
+    #root .new-question textarea {
+        height: 100px;
+    }
+
+    #root .correct-answer {
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    #return-to-dashboard {
+        background-color: #e74c3c;
+        color: #fff;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        margin-top: 10px;
+        transition: background-color 0.3s;
+    }
+
+    #return-to-dashboard:hover {
+        background-color: #c0392b;
+    }
+
+    #save-test-btn, #add-question-btn, #create-unique-version-btn {
+        background-color: #3498db;
+        color: #fff;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 15px 20px;
+        border: none;
+        border-radius: 5px;
+        margin-top: 10px;
+        transition: background-color 0.3s;
+        width: 175px;
+    }
+
+    #save-test-btn:hover, #add-question-btn:hover, #create-unique-version-btn:hover {
+        background-color: #0a6bab;
+    }
+
+    #format-test-btn {
+        background-color: #3498db;
+        color: #fff;
+        cursor: pointer;
+        font-size: 25px;
+        padding: 0px 0px;
+        border: none;
+        margin-top: -10px;
+        transition: background-color 0.3s;
+        width: 175px;
+        border-radius: 50%;
+        height: 50px; 
+        line-height: 50px;
+    }
+
+    #format-test-btn:hover {
+        background-color: #0a6bab;
+    }
+
+    .answer-label {
+        display: inline-block;
+        width: 30px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .remove-question-btn {
+        background-color: #e74c3c;
+        color: #fff;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .remove-question-btn:hover {
+        background-color: #c0392b;
+    }
+    #save-test {
+    background-color: #27ae60;
+    color: #fff;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+    width: 100%;
+    }
+
+    #save-test:hover {
+        background-color: #219d56;
+    }
+
+    .popup {
+        display: none;
+        position: fixed;
+        top: 3px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 1000;
+        width: 50%;
+        max-width: 150px;
+        text-align: center;
+        font-size: 16px;
+    }
+    img {
+        max-width: 100%;
+        height: auto;
+        margin-top: 10px;
+    }
+</style>
+<body>
+    <form>
+        <h1>Create Test</h1>
+        <button id="format-test-btn" onclick="saveAndFormatTest(); return false;">Export</button> <!-- Moved here -->
+        <label for="testName">Test Name:</label>
+        <input type="text" id="testName" name="testName" placeholder="Name of this test here" required>
+
+        <div id="root"></div>
+
+        <input type="submit" id="save-test" value="Save Test" onclick="saveTest(); return false;">
+        <button id="add-question-btn" onclick="createQuestion(); return false;">Add MCQ</button> <!-- Changed here -->
+        <button id="create-unique-version-btn" onclick="shuffleQuestionsAndAnswers(); return false;">Create Unique Version</button> <!-- Moved here -->
+        <button id="add-question-btn" onclick="createFreeResponseQuestion(); return false;">Add FRQ</button> <!-- Changed here -->
+        <button id="return-to-dashboard" onclick="returnToDashboard(); return false;">Return to Dashboard</button>
+        
+        <div id="popup" class="popup"></div>
+    </form>
+    <script>
+        let params = (new URL(document.location)).searchParams;
+        let root = document.getElementById("root");
+        let questions = JSON.parse(atob(decodeURIComponent(params.get("questions"))));
+
+        document.getElementById("testName").value = decodeURIComponent(params.get("testName"));
+
+        render();
+
+        function saveTest() {
+            event.preventDefault();
+            let testName = document.getElementById("testName").value;
+            fetch("/save_test", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    testName: testName,
+                    _id: params.get("testid"),
+                    questions: questions
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    showPopup("Saved.", true);
+                } else {
+                    showPopup("Failed to Save Test. Try again later.", false);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving test:', error);
+                showPopup("Failed to Save Test. Try again later.", false);
+            });
+        }
+
+        function showPopup(message, isSuccess) {
+            const popup = document.getElementById("popup");
+            popup.textContent = message;
+            popup.style.display = "block";
+            popup.style.backgroundColor = isSuccess ? "#27ae60" : "#e74c3c";
+
+            setTimeout(() => {
+                popup.style.display = "none";
+            }, 3000);
+        }
+
+        function createQuestion() {
+            questions.push({
+                index: questions.length,
+                content: "",
+                images: [],
+                answers: ["", "", "", "", ""],
+            });
+            render();
+        }
+
+        function createFreeResponseQuestion() {
+            questions.push({
+                index: questions.length,
+                content: "",
+                images: [],
+            });
+            render();
+        }
+
+
+        function render() {
+            root.innerHTML = "";
+            questions.forEach((question) => {
+                let questionContainer = document.createElement("div");
+
+                if (question.index === questions.length - 1) {
+                    questionContainer.classList.add("new-question");
+                }
+
+                let content = document.createElement("textarea");
+                content.value = question.content;
+
+                content.addEventListener("input", (e) => {
+                    questions[question.index].content = content.value;
+                });
+
+                questionContainer.appendChild(content);
+
+                let imageInput = document.createElement("input");
+                imageInput.type = "file";
+                imageInput.accept = "image/*";
+                imageInput.multiple = true;
+
+                imageInput.addEventListener("change", (e) => {
+                    const files = e.target.files;
+                    const imageURLs = [];
+
+                    for (let i = 0; i < files.length; i++) {
+                        imageURLs.push(URL.createObjectURL(files[i]));
+                    }
+
+                    questions[question.index].images = imageURLs;
+                    render();
+                });
+
+                questionContainer.appendChild(imageInput);
+                content.placeholder = "Question";
+                if (question.images.length > 0) {
+                    question.images.forEach((imageURL) => {
+                        let image = document.createElement("img");
+                        image.src = imageURL;
+                        questionContainer.appendChild(image);
+                    });
+                }
+
+                if (question.answers && question.answers.length > 0) {
+                    let answers = document.createElement("ul");
+
+                    ['0', '1', '2', '3', '4'].forEach((option, index) => {
+                        let answerOption = document.createElement("li");
+
+                        let answerInput = document.createElement("input");
+                        answerInput.type = "text";
+                        answerInput.value = question.answers[index] || "";
+                        answerInput.placeholder = "Choice " + String.fromCharCode(65 + index);
+
+                        let answerLabel = document.createElement("label");
+                        answerLabel.className = "answer-label";
+                        answerLabel.innerHTML = String.fromCharCode(65 + index);
+
+                        answerInput.addEventListener("input", (e) => {
+                            questions[question.index].answers[index] = answerInput.value;
+                        });
+
+                        answerOption.appendChild(answerLabel);
+                        answerOption.appendChild(answerInput);
+                        answers.appendChild(answerOption);
+                    });
+
+                    questionContainer.appendChild(answers);
+                }
+
+                let removeButton = document.createElement("button");
+                removeButton.textContent = "Remove Question";
+                removeButton.onclick = function() {
+                    questions.splice(question.index, 1);
+                    render();
+                };
+
+                questionContainer.appendChild(removeButton);
+
+                root.appendChild(questionContainer);
+            });
+        }
+
+
+        function shuffleQuestionsAndAnswers() {
+            questions = shuffleArray(questions);
+            questions.forEach(question => {
+                if (question.answers) {
+                    question.answers = shuffleArray(question.answers);
+                }
+            });
+            render();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        async function formatTest() {
+            try {
+                const element = document.getElementById("root");
+
+                const response = await fetch('/generate_formatted_test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ formattedTestContent: element.outerHTML }),
+                });
+
+                if (response.ok) {
+                    alert('Formatted test generated successfully!');
+                } else {
+                    console.error('Error generating formatted test:', response.status);
+                    alert('Error generating formatted test. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error exporting formatted test:', error);
+                alert('Error generating formatted test. Please try again.');
+            }
+        }
+
+        function returnToDashboard() {
+            window.location.href = "/dashboard";
+        }
+
+        async function saveAndFormatTest() {
+            try {
+                const testName = document.getElementById("testName").value;
+
+                const response = await fetch("/save_and_format_test", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        testName: testName,
+                        questions: questions
+                    })
+                });
+
+                if (response.ok) {
+                    const { testId } = await response.json();
+                    const formattedTestUrl = '/formatted_test/' + testId;
+                    window.open(formattedTestUrl, '_blank');
+                } else {
+                    console.error('Error saving and formatting test:', response.status);
+                }
+            } catch (error) {
+                console.error('Error saving and formatting test:', error);
+            }
+        }
+
+        setInterval(savePage, 300000);
+
+        function savePage() {
+            saveTest();
+            console.log('Test saved.');
+        }
+    </script>
+</body>
+</html>

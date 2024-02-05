@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Formatted Test</title>
+</head>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f7fc;
+        margin: 0;
+        padding: 0;
+    }
+
+    header {
+        background-color: #3498db;
+        padding: 20px;
+        color: #fff;
+        text-align: center;
+        font-size: 300%;
+    }
+
+    section {
+        margin: 20px;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        color: #3498db;
+        font-size: 250%;
+        text-align: center;
+    }
+
+    h3 {
+        color: #3498db;
+        font-size: 150%;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        font-size: 120%;
+    }
+
+    li {
+        margin-bottom: 10px;
+    }
+
+    a {
+        color: #3498db;
+        text-decoration: none;
+        margin-right: 20px;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    .back-btn, .edit-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 120%;
+        text-align: center;
+        text-decoration: none;
+        color: #fff;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .back-btn {
+        background-color: #3498db;
+    }
+
+    .edit-btn {
+        background-color: #4caf50;
+    }
+
+    .back-btn:hover {
+        background-color: #2980b9;
+    }
+
+    .edit-btn:hover {
+        background-color: #45a049;
+    }
+
+    .test-container {
+        text-align: left;
+    }
+
+    .question {
+        margin-bottom: 50px;
+        
+    }
+
+    .question-number {
+        font-weight: bold;
+        font-size: 150%;
+    }
+
+    .answer-options {
+        list-style: none;
+        padding: 0;
+        counter-reset: answer-counter;
+    }
+
+    .answer-option {
+        margin-bottom: 8px;
+    }
+
+    .answer-letter {
+        font-weight: bold;
+        margin-right: 8px;
+    }
+
+    .student-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+
+    .question-text {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+    #exportButton {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 120%;
+        text-align: center;
+        text-decoration: none;
+        color: #fff;
+        background-color: #2ecc71;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    #exportButton:hover {
+        background-color: #27ae60;
+    }
+
+    img {
+    max-width: 25%;
+    height: auto;
+    margin-top: 10px;
+    }
+</style>
+<section>
+        <div class="test-container">
+            <div class="student-info">
+                <div style="font-size: 20px;">Student&nbsp;Name:&nbsp;______________________ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date: _______</div>
+            </div>
+            <h2>TEST - <%= test.testName %></h2>
+            <h3><%= test.questions.length %> Questions</h3>
+
+            <% for (let i = 0; i < test.questions.length; i++) { %>
+                <div class="question">
+                    <p class="question-number"><%= i + 1 %>.</p>
+                    <p class="question-image"><% for (let k = 0; k < test.questions[i].images.length; k++) { %>
+                        <img src="<%= test.questions[i].images[k] %>" alt="Question Image" class="question-image">
+                    <% } %></p>
+                    <p class="question-text"><strong><%= test.questions[i].lines %></strong> <%= test.questions[i].content %></p>
+                    <ul class="answer-options">
+                        <% for (let j = 0; j < test.questions[i].answers.length; j++) { %>
+                            <li class="answer-option">
+                                <span class="answer-letter"><%= String.fromCharCode(65 + j) %></span>
+                                <%= test.questions[i].answers[j] %>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
+            <% } %>
+        </div>
+    </div>
+    <a href="/dashboard" class="back-btn">Back to Dashboard</a>
+    <button id="exportButton">Export Document</button>
+    
+</section>
+<script>
+    document.getElementById("exportButton").addEventListener("click", function() {
+        exportToWord();
+    });
+</script>
+<script>
+    function exportToWord() {
+        var htmlContent = document.querySelector('html').outerHTML;
+        htmlContent = removeExportButton(htmlContent);
+        
+        var blob = new Blob([htmlContent], { type: 'application/msword' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'exported_document.doc';
+        link.click();
+        reloadPage();
+    }
+
+    function removeExportButton(htmlContent) {
+
+        var exportButton = document.getElementById('exportButton');
+        var backToDashboardButton = document.querySelector('.back-btn');
+
+        if (exportButton) {
+            exportButton.parentNode.removeChild(exportButton);
+        }
+
+        if (backToDashboardButton) {
+            backToDashboardButton.parentNode.removeChild(backToDashboardButton);
+        }
+
+        return document.querySelector('html').outerHTML;
+    }
+
+    function reloadPage() {
+        location.reload();
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup - EasyTest</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<style>
+    body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7fc;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    }
+
+    .login-container {
+        text-align: center;
+        max-width: 400px;
+        width: 100%;
+        padding: 40px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        color: #3498db;
+        font-size: 32px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-size: 18px;
+    }
+
+    input {
+        width: calc(100% - 32px);
+        padding: 12px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+
+    button {
+        background-color: #3498db;
+        color: #fff;
+        cursor: pointer;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 24px;
+        width: calc(50% - 6px);
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #217dbb;
+    }
+
+    #pay-button {
+        margin-right: 6px;
+    }
+
+    a {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 22px;
+        display: inline-block;
+        margin-top: 24px;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+</style>
+<body>
+    <div class="login-container">
+        <h2>Signup</h2>
+        <form action="/signup" method="post" id="signup-form">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="username" placeholder="Enter your name" required autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" name="password" placeholder="Enter password" required>
+            </div>
+            <div class="form-group">
+                <label for="schoolCode">School Code:</label>
+                <input type="text" id="schoolCode" name="schoolCode" placeholder="Enter 4-digit school code">
+            </div>
+            <button type="button" id="pay-button">Pay with Stripe</button>
+            <button type="submit" id="signup-button">Signup</button>
+        </form>
+        <div class="navigation-buttons">
+            <a href="/login">Login</a>
+            <a href="/home">Home</a>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var stripe = Stripe('YOUR_STRIPE_PUBLIC_KEY');
+            var elements = stripe.elements();
+
+            var card = elements.create('card');
+
+            card.mount('#card-element');
+
+            card.addEventListener('change', function (event) {
+                var displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+
+            var form = document.getElementById('signup-form');
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                stripe.createToken(card).then(function (result) {
+                    if (result.error) {
+                        var errorElement = document.getElementById('card-errors');
+                        errorElement.textContent = result.error.message;
+                    } else {
+                        stripeTokenHandler(result.token);
+                    }
+                });
+            });
+
+            var payButton = document.getElementById('pay-button');
+            payButton.addEventListener('click', function () {
+                stripe.createPaymentMethod({
+                    type: 'card',
+                    card: card,
+                }).then(function (result) {
+                    if (result.error) {
+                        var errorElement = document.getElementById('card-errors');
+                        errorElement.textContent = result.error.message;
+                    } else {
+                        stripePaymentHandler(result.paymentMethod.id);
+                    }
+                });
+            });
+
+            function stripeTokenHandler(token) {
+                var form = document.getElementById('signup-form');
+                var hiddenInput = document.createElement('input');
+                hiddenInput.setAttribute('type', 'hidden');
+                hiddenInput.setAttribute('name', 'stripeToken');
+                hiddenInput.setAttribute('value', token.id);
+                form.appendChild(hiddenInput);
+
+                form.submit();
+            }
+
+            function stripePaymentHandler(paymentMethodId) {
+                var form = document.getElementById('signup-form');
+                var hiddenInput = document.createElement('input');
+                hiddenInput.setAttribute('type', 'hidden');
+                hiddenInput.setAttribute('name', 'paymentMethodId');
+                hiddenInput.setAttribute('value', paymentMethodId);
+                form.appendChild(hiddenInput);
+
+                form.submit();
+            }
+        });
+    </script>
+</body>
+</html>
